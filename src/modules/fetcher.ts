@@ -5,6 +5,7 @@ import {parse} from 'url';
 export class Fetcher {
     private _fetch: AxiosInstance;
     private _initialPath: string;
+    private _domCache = {};
 
     constructor(baseURL) {
         const {protocol, hostname, pathname} = parse(baseURL);
@@ -16,12 +17,15 @@ export class Fetcher {
         if (!url) {
             url = this._initialPath;
         }
+        if (this._domCache[url]) {
+            return this._domCache[url];
+        }
         const {status, data} = await this._fetch.get(url);
         if (status >= 400) {
             console.error(`[error] status ${status}`);
             throw [];
         }
-        return new JSDOM(data).window.document;
+        return this._domCache[url] = new JSDOM(data).window.document;
     }
 
     async images(urls: string[]) {
