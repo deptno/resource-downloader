@@ -1,5 +1,5 @@
 {
-  "name": "web resource downloader",
+  "name": "web-resource-downloader",
   "version": "0.0.1",
   "description": "web resource downloader",
   "main": "src/index.js",
