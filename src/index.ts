@@ -11,6 +11,8 @@ console.log(
     `\n${chalk.red(version)}`
 );
 
+process.on('SIGINT', () => console.log('다운로드 중입니다.'));
+
 const killInifiniteLoop = (before = Date.now()) => () => {
         process.exit(1);
     if (Date.now() - before < 1 * 500) {

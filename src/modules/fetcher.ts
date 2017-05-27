@@ -34,5 +34,3 @@ export class Fetcher {
         );
     }
 }
-
-process.on('SIGINT', () => console.log('다운로드 중입니다.'));
