@@ -1,6 +1,6 @@
 {
   "name": "web-resource-downloader",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "web resource downloader",
   "main": "src/index.js",
   "author": "deptno@gmail.com",
