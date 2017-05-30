@@ -2,8 +2,8 @@ import * as chalk from 'chalk';
 import * as figlet from 'figlet';
 import * as clear from 'clear';
 import {name, version} from '../package.json';
-import {sites, remoteConfigs} from '../.srdconfig.json';
 import CLI from './modules/interface';
+import {join} from 'path';
 
 clear();
 console.log(
@@ -11,31 +11,27 @@ console.log(
     `\n${chalk.red(version)}`
 );
 
-process.on('SIGINT', () => console.log('다운로드 중입니다.'));
+try {
+    const {sites, remoteConfigs} = require(join(process.env.HOME, '.config', 'wrdconfig.json'));
 
-const killInifiniteLoop = (before = Date.now()) => () => {
-        process.exit(1);
-    if (Date.now() - before < 1 * 500) {
-        console.error('killer');
-        process.exit(1);
-    }
-};
-!async function main(sites) {
-    const cli = new CLI(sites);
-    try {
-        while (true) {
-            const killer = killInifiniteLoop();
-
-            const siteName = await cli.select();
-            const site = cli.getSite(siteName);
+    !async function main(sites) {
+        const cli = new CLI(sites);
+        try {
             while (true) {
-                const result = await site.stage();
-                break;
+                const siteName = await cli.select();
+                const site = cli.getSite(siteName);
+                await site.stage();
             }
-
-            killer();
+        } catch(ex) {
+            console.error(ex);
         }
-    } catch(ex) {
-        console.error(ex);
-    }
-}(sites);
+    }(sites);
+} catch(ex) {
+    console.error(`${chalk.red('.wrdconfig.json not found')}
+    
+    sample download
+    
+    ${chalk.yellow('[curl]')}
+    mkdir -p ~/.config && wget -o ~/.config/wrdconfig.json https://gist.githubusercontent.com/deptno/7d652050fdecaf6e91a4411b8f8f39a5/raw/e7a139c31f73d05383ceef401b991f91adc0f2d5/wrdconfig.json`);
+}
+

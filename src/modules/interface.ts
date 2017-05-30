@@ -19,7 +19,7 @@ export default class CLI {
             choices:   sites,
             paginated: true,
             pageSize:  30
-        });
+        }, true);
         return answer;
     }
 

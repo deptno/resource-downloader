@@ -43,6 +43,7 @@ export default class SiteController {
         }[type];
         const result = await handler();
 
+        console.log(operation);
         if (operation.type === Operations.PREV) {
             await this.prev();
         }
@@ -59,7 +60,9 @@ export default class SiteController {
         });
         const {name, value} = answer;
 
-        if (operation.type === Operations.NEXT) {
+        if (name === '..') {
+            await this.prev();
+        } else if (operation.type === Operations.NEXT) {
             await this.next({url: value, answer});
         }
         
@@ -102,7 +105,10 @@ export default class SiteController {
         return this.stage(stageParam);
     }
 
-    private async prev(stageParam?) {
+    async prev(stageParam?) {
+        if (this._stage === 0) {
+            return;
+        }
         this.setStep(this._stage - 1);
         if (!stageParam) {
             stageParam = this.getStageParam();
