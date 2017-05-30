@@ -29,7 +29,7 @@ try {
 } catch(ex) {
     console.error(`${chalk.red('.wrdconfig.json not found')}
     
-    sample download
+    sample wrdconfig.json download
     
     ${chalk.yellow('[curl]')}
     mkdir -p ~/.config && wget -o ~/.config/wrdconfig.json https://gist.githubusercontent.com/deptno/7d652050fdecaf6e91a4411b8f8f39a5/raw/e7a139c31f73d05383ceef401b991f91adc0f2d5/wrdconfig.json`);
