@@ -43,7 +43,6 @@ export default class SiteController {
         }[type];
         const result = await handler();
 
-        console.log(operation);
         if (operation.type === Operations.PREV) {
             await this.prev();
         }
@@ -83,7 +82,7 @@ export default class SiteController {
 
     private download(filename, urls) {
         process.nextTick((async (filename, urls) => {
-            const responses = await this._fetcher.images(urls);
+            const responses = await Fetcher.images(urls);
             const output    = fs.createWriteStream(filename);
             const zip       = new Zip(output);
 

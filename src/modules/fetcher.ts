@@ -28,9 +28,13 @@ export class Fetcher {
         return this._domCache[url] = new JSDOM(data).window.document;
     }
 
-    async images(urls: string[]) {
+    static async images(urls: string[]) {
         return axios.all<AxiosResponse>(
             urls.map(url => axios({url, responseType: 'stream'}).catch(err => null))
         );
+    }
+
+    static async fetch<T>(url: string): Promise<{data: T}&AxiosResponse> {
+        return axios.get(url).catch(err => null);
     }
 }
