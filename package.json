@@ -1,10 +1,17 @@
 {
-  "name": "web-resource-downloader",
+  "name": "resource-downloader",
   "version": "0.0.3",
-  "description": "web resource downloader",
+  "description": "$ rd",
   "main": "src/index.js",
+  "bin": {
+    "rd": "index.js",
+    "resource-downloader": "index.js"
+  },
   "author": "deptno@gmail.com",
   "license": "MIT",
+  "scripts": {
+    "prepublish": "tsc && echo \"require('resource-downloader');\" > index.js"
+  },
   "devDependencies": {
     "typescript": "^2.3.3"
   },
