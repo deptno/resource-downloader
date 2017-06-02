@@ -3,6 +3,10 @@
   "version": "0.2.0",
   "description": "resource downloader, scrap web site resources",
   "main": "src/index.js",
+  "bin": {
+    "rdcli": "index.js",
+    "resource-downloader": "index.js"
+  },
   "author": "deptno@gmail.com",
   "license": "Apache 2.0",
   "devDependencies": {
@@ -22,5 +26,8 @@
     "inquirer": "^3.0.6",
     "jsdom": "^11.0.0",
     "sharp": "^0.18.1"
+  },
+  "scripts": {
+    "prepublish": "tsc && echo \"require('resource-downloader');\" > index.js"
   }
 }
