@@ -5,6 +5,7 @@ import Questioner from './questioner';
 import {Zip} from './downloader/zip-images';
 import {Fetcher} from './fetcher';
 import {Operations} from '../constants';
+import {writeZip} from './writer';
 
 export default class SiteController {
     private _stage  = 0;
@@ -81,7 +82,7 @@ export default class SiteController {
     }
 
     private download(filename, urls) {
-        process.nextTick((async (filename, urls) => {
+        process.nextTick(async (filename, urls) => {
             const responses = await Fetcher.images(urls);
             const output    = fs.createWriteStream(filename);
             const zip       = new Zip(output);
@@ -96,7 +97,12 @@ export default class SiteController {
                     zip.append(name, stream);
                 });
             zip.finalize();
-        }).bind(this, filename, urls))
+        });
+    }
+
+    //todo
+    private async downloadWithSplit(filename, urls) {
+        return writeZip(filename, (await Fetcher.images(urls)).filter(Boolean));
     }
 
     private async next(stageParam) {
