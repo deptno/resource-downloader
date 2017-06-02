@@ -1,15 +1,9 @@
 import * as chalk from 'chalk';
-import * as figlet from 'figlet';
-import * as clear from 'clear';
 import {name, version} from '../package.json';
 import CLI from './modules/interface';
 import {readConfig} from './modules/config-loader';
 
-clear();
-console.log(
-    chalk.yellow(figlet.textSync(name, {horizontalLayout: 'default', verticalLayout: 'default'})),
-    `\n${chalk.red(version)}`
-);
+console.log(`${chalk.yellow(name)} v${version}`);
 
 !async function() {
     try {
