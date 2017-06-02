@@ -47,4 +47,7 @@ interface StageParam {
         value: string;
     }
 }
-
+interface Selected {
+    name: string;
+    url: string;
+}

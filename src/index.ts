@@ -9,8 +9,8 @@ console.log(`${chalk.yellow(name)} v${version}`);
     try {
         const cli = new Cli(await readConfig());
         while (true) {
-            const siteName = await cli.select();
-            const site = cli.getSite(siteName);
+            const answer = await cli.select();
+            const site = cli.getSite(answer);
             await site.stage();
         }
     } catch(ex) {

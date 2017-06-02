@@ -6,8 +6,11 @@ export default class Questioner {
             const name = '..';
             const upper = {
                 name,
-                value: name
-            };
+                value: {
+                    type: 'list',
+                    name, url: name
+                }
+            } as any;
             question.choices = [upper, ...<ChoiceType[]>question.choices];
         }
         const answer = await prompt(question);
@@ -18,8 +21,6 @@ export default class Questioner {
             question.choices = <ChoiceType[]>question.choices;
         }
         const answer = await prompt(question);
-        console.log('answer', answer);
-        
-        return answer.name;
+        return answer;
     }
 }

@@ -4,20 +4,21 @@ import * as sharp from 'sharp';
 import * as path from 'path';
 import {SPLIT, SPLIT_RIGHT, ZIP} from '../../constants';
 
-export default (filename, streams, options: DownloadOptions) => {
+export default (name, streams, options: DownloadOptions) => {
     const optZip   = options.find(option => option === ZIP);
     const optSplit = options.find(option => option === SPLIT || option === SPLIT_RIGHT);
     const writer   = optZip
-        ? new ZipWriter(fs.createWriteStream(filename))
+        ? new ZipWriter(fs.createWriteStream(zipName(name)))
         : new FileWriter();
     const append = writer.append.bind(writer);
     const finalize = writer.finalize.bind(writer);
 
-    doWrite(filename, streams, optSplit, append).then(finalize);
+    doWrite(streams, optSplit, append).then(finalize);
 };
 
+const zipName = name => `${name.replace(/\s/g, '_')}.zip`;
 const getName = url => path.basename(decodeURI(url));
-const doWrite = async (filename, streams, splitOption: DownloadOption, onWrite: WriteEventCallback) => {
+const doWrite = async (streams, splitOption: DownloadOption, onWrite: WriteEventCallback) => {
     if (!splitOption) {
         return streams.map(response => onWrite(getName(response.config.url), response.data));
     }

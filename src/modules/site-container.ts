@@ -20,22 +20,18 @@ export default class SiteController {
         const elements   = Array.from(dom.querySelectorAll(selector));
         const choices    = elements.map(element => {
             const name  = attrs.name ? element.getAttribute(attrs.name) : element.textContent;
-            const value = element.getAttribute(attrs.value);
+            const url = element.getAttribute(attrs.value);
 
             return {
-                name: `${name} [${value}]`,
-                value: {name, value}
+                name: `${name} [${url}]`,
+                value: {name, url}
             };
         });
         const handler    = {
             list:     async () => await this.select(type, message, choices, operation),
             download: () => {
                 const {answer: {name}} = this.getStageParam();
-                this.download(
-                    `${name.replace(/\s/g, '_')}.zip`,
-                    choices.map(choice => choice.value.value),
-                    options
-                );
+                this.download(name, choices.map(choice => choice.value.url), options);
             }
         }[type];
         const result     = await handler();
@@ -48,21 +44,21 @@ export default class SiteController {
     }
 
     private async select(type, message, choices, operation) {
-        const answer        = await Questioner.askSelection({
+        const {select}        = await Questioner.askSelection({
             type, message, choices,
-            name:      'name',
+            name:      'select',
             paginated: true,
             pageSize:  20
         });
-        const {name, value} = answer;
+        const {name, url} = select;
 
         if (name === '..') {
             await this.prev();
         } else if (operation.type === NEXT) {
-            await this.next({url: value, answer});
+            await this.next({url: url, answer: select});
         }
 
-        return value;
+        return select;
     }
 
     private setStageParam(param: StageParam) {
