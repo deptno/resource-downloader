@@ -5,6 +5,8 @@ type OpDownload = Op<DownloadInfo>
 type Operation = OpNext | OpDownload;
 type StepType = 'list' | 'download';
 type Stages = Stage<Operation>[];
+type DownloadOption = 'just'|'split'|'splitRight'|'zip'
+type DownloadOptions = DownloadOption[];
 
 interface Config {
     sites: Sites;
@@ -25,6 +27,7 @@ interface Selectable {
 interface Stage<Operation> extends Selectable {
     type: StepType;
     message: string;
+    options: DownloadOptions;
     operation: Operation;
 }
 interface Op<T> {
@@ -44,3 +47,4 @@ interface StageParam {
         value: string;
     }
 }
+
