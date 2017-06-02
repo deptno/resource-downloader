@@ -1,10 +1,10 @@
 {
-  "name": "web-resource-downloader",
-  "version": "0.0.3",
-  "description": "web resource downloader",
+  "name": "resource-downloader",
+  "version": "0.1.0",
+  "description": "resource downloader",
   "main": "src/index.js",
   "author": "deptno@gmail.com",
-  "license": "MIT",
+  "license": "Apache 2.0",
   "devDependencies": {
     "typescript": "^2.3.3"
   },
