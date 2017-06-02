@@ -1,11 +1,23 @@
 import Questioner from './questioner';
 import {Fetcher} from './fetcher';
-import {JUST, NEXT, PREV} from '../constants';
+import {NEXT, PARENT_DIRECTORY, PREV, SPLIT, ZIP} from '../constants';
 import write from './writer/index';
 
 export default class SiteController {
-    private _stage  = 0;
-    private _params = [];
+    static mapElementToChoice(attrs: MapString, element: Element): ChoiceOption {
+        const name = attrs.name
+            ? element.getAttribute(attrs.name)
+            : element.textContent;
+        const url  = element.getAttribute(attrs.value);
+
+        return {
+            name:  `${name} [${url}]`,
+            value: {name, url}
+        };
+    }
+
+    private _stage                = 0;
+    private _params: StageParam[] = [];
     private _fetcher: Fetcher;
 
     constructor(private _site: Site) {
@@ -14,37 +26,28 @@ export default class SiteController {
 
     async stage(param = {} as StageParam) {
         this.setStageParam(param);
-        const {type, selector, attrs, operation, message, options} = this.getStageInfo();
-        const {url = ''} = param;
-        const dom        = await this._fetcher.dom(url);
-        const elements   = Array.from(dom.querySelectorAll(selector));
-        const choices    = elements.map(element => {
-            const name  = attrs.name ? element.getAttribute(attrs.name) : element.textContent;
-            const url = element.getAttribute(attrs.value);
 
-            return {
-                name: `${name} [${url}]`,
-                value: {name, url}
-            };
-        });
-        const handler    = {
-            list:     async () => await this.select(type, message, choices, operation),
-            download: () => {
-                const {answer: {name}} = this.getStageParam();
-                this.download(name, choices.map(choice => choice.value.url), options);
-            }
-        }[type];
-        const result     = await handler();
+        const {type, selector, attrs, operation, message, options}
+                       = this.getStageInfo();
+        const dom      = await this._fetcher.dom(param.url);
+        const elements = Array.from(dom.querySelectorAll(selector));
+        const choices  = elements.map<ChoiceOption>(
+            SiteController.mapElementToChoice.bind(null, attrs)
+        );
+
+        if (type === 'list') {
+            await this.select(type, message, choices, operation);
+        } else if (type === 'download') {
+            this.download(choices.map(choice => choice.value.url), options)
+        }
 
         if (operation.type === PREV) {
             await this.prev();
         }
-
-        return result;
     }
 
     private async select(type, message, choices, operation) {
-        const {select}        = await Questioner.askSelection({
+        const {select}    = await Questioner.askSelection({
             type, message, choices,
             name:      'select',
             paginated: true,
@@ -52,13 +55,11 @@ export default class SiteController {
         });
         const {name, url} = select;
 
-        if (name === '..') {
+        if (name === PARENT_DIRECTORY) {
             await this.prev();
         } else if (operation.type === NEXT) {
-            await this.next({url: url, answer: select});
+            await this.next({url, name});
         }
-
-        return select;
     }
 
     private setStageParam(param: StageParam) {
@@ -73,10 +74,12 @@ export default class SiteController {
         return this._site.stages[this._stage];
     }
 
-    private download(filename, urls, options: DownloadOptions = [JUST]): void {
+    private download(urls, options: DownloadOptions = [ZIP, SPLIT]): void {
+        const {name} = this.getStageParam();
         Fetcher
             .images(urls)
-            .then(responses => write(filename, responses.filter(Boolean), options));
+            .then(responses => responses.filter(Boolean))
+            .then(responses => write(name, responses, options));
     }
 
     private async next(stageParam: StageParam) {
@@ -84,7 +87,7 @@ export default class SiteController {
         return this.stage(stageParam);
     }
 
-    async prev(stageParam?) {
+    private async prev(stageParam?) {
         if (this._stage === 0) {
             return;
         }

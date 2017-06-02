@@ -1,26 +1,25 @@
 import {ChoiceType, prompt, Question} from 'inquirer';
+import {PARENT_DIRECTORY} from '../constants';
 
 export default class Questioner {
     static async askSelection(question: Question, root = false) {
         if (!root) {
-            const name = '..';
+            const name = PARENT_DIRECTORY;
             const upper = {
                 name,
                 value: {
-                    type: 'list',
-                    name, url: name
+                    name,
+                    url: name
                 }
             } as any;
             question.choices = [upper, ...<ChoiceType[]>question.choices];
         }
-        const answer = await prompt(question);
-        return answer;
+        return await prompt(question);
     }
     static async askCheckBox(question: Question, root = false) {
         if (!root) {
             question.choices = <ChoiceType[]>question.choices;
         }
-        const answer = await prompt(question);
-        return answer;
+        return await prompt(question);
     }
 }

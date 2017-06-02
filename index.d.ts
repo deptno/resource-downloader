@@ -40,14 +40,19 @@ interface DownloadInfo extends Selectable {
         done: string;
     }
 }
+interface ChoiceOptionValue {
+    url: string;
+    name: string;
+}
 interface StageParam {
     url: string;
-    answer: {
-        name: string;
-        value: string;
-    }
-}
-interface Selected {
     name: string;
-    url: string;
 }
+interface ChoiceOption {
+    name: string;
+    value: ChoiceOptionValue;
+}
+interface MapString {
+    [key: string]: string;
+}
+

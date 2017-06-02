@@ -13,10 +13,7 @@ export class Fetcher {
         this._fetch = axios.create({baseURL: [protocol, hostname].join('//')});
     }
 
-    async dom(url): Promise<Document> {
-        if (!url) {
-            url = this._initialPath;
-        }
+    async dom(url = this._initialPath): Promise<Document> {
         if (this._domCache[url]) {
             return this._domCache[url];
         }
