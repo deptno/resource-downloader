@@ -73,9 +73,10 @@ export default class SiteController {
         return this._site.stages[this._stage];
     }
 
-    private async download(filename, urls, options: DownloadOptions = [JUST]) {
-        const responses = await Fetcher.images(urls);
-        write(filename, responses.filter(Boolean), options);
+    private download(filename, urls, options: DownloadOptions = [JUST]): void {
+        Fetcher
+            .images(urls)
+            .then(responses => write(filename, responses.filter(Boolean), options));
     }
 
     private async next(stageParam: StageParam) {
