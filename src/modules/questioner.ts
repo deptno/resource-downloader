@@ -6,19 +6,19 @@ export default class Questioner {
             const name = '..';
             const upper = {
                 name,
-                value: JSON.stringify({name})
+                value: name
             };
             question.choices = [upper, ...<ChoiceType[]>question.choices];
         }
         const answer = await prompt(question);
-        return JSON.parse(answer.name);
+        return answer;
     }
     static async askCheckBox(question: Question, root = false) {
         if (!root) {
             question.choices = <ChoiceType[]>question.choices;
         }
         const answer = await prompt(question);
-        console.log('answer', answer)
+        console.log('answer', answer);
         
         return answer.name;
     }

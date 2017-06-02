@@ -24,7 +24,7 @@ export default class SiteController {
 
             return {
                 name: `${name} [${value}]`,
-                value: JSON.stringify({name, value})
+                value: {name, value}
             };
         });
         const handler    = {
@@ -33,7 +33,7 @@ export default class SiteController {
                 const {answer: {name}} = this.getStageParam();
                 this.download(
                     `${name.replace(/\s/g, '_')}.zip`,
-                    choices.map(choice => JSON.parse(choice.value).value),
+                    choices.map(choice => choice.value.value),
                     options
                 );
             }

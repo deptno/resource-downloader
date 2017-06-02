@@ -8,13 +8,11 @@ export default class CLI {
     async select() {
         const sites  = this._sites.map(site => ({
             name:  site.name,
-            value: JSON.stringify({
-                name: site.url
-            })
+            value: site.url
         }));
         const answer = await Questioner.askSelection({
             type:      'list',
-            name:      'name',
+            name:      'url',
             message:   'select site',
             choices:   sites,
             paginated: true,
@@ -24,7 +22,7 @@ export default class CLI {
     }
 
     getSite(site) {
-        const found = this._sites.find(siteInfo => siteInfo.url === site.name);
+        const found = this._sites.find(siteInfo => siteInfo.url === site.url);
         if (!found) {
             throw 'check site name';
         }
