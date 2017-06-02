@@ -1,9 +1,9 @@
-type OperationType = 'next'|'prev';
+type OperationType = 'next' | 'prev';
 type Sites = Site[];
 type OpNext = Op<null>;
 type OpDownload = Op<DownloadInfo>
-type Operation = OpNext|OpDownload;
-type StepType = 'list'|'download';
+type Operation = OpNext | OpDownload;
+type StepType = 'list' | 'download';
 type Stages = Stage<Operation>[];
 
 interface Config {
@@ -27,18 +27,16 @@ interface Stage<Operation> extends Selectable {
     message: string;
     operation: Operation;
 }
-
 interface Op<T> {
     type: OperationType;
     data: T;
 }
-interface DownloadInfo extends Selectable  {
+interface DownloadInfo extends Selectable {
     prefixes: {
         doing: string;
         done: string;
     }
 }
-
 interface StageParam {
     url: string;
     answer: {
