@@ -1,6 +1,6 @@
 import * as chalk from 'chalk';
 import {Fetcher} from './fetcher';
-import {join} from 'path';
+import * as path from 'path';
 
 const remoteConfig      = async (remoteConfigs): Promise<Sites> => {
     try {
@@ -16,11 +16,13 @@ const remoteConfig      = async (remoteConfigs): Promise<Sites> => {
         return [];
     }
 };
-export const readConfig = async (): Promise<Sites> => {
-    const configFile = 'rdconfig.json';
-    const configPath = join(process.env.HOME, '.config', configFile);
+
+const filename = 'rdconfig.json';
+const configPath = path.join(process.env.HOME, '.config', filename);
+
+export const readConfig = async (configFile = filename): Promise<Sites> => {
     try {
-        const {sites, remoteConfigs} = require(configPath);
+        const {sites, remoteConfigs} = require(path.resolve(configFile));
 
         if (remoteConfigs) {
             const results = await Promise.all<Sites>(remoteConfigs.map(remoteConfig));
@@ -28,6 +30,10 @@ export const readConfig = async (): Promise<Sites> => {
         }
         return sites;
     } catch (ex) {
+        if (configFile === filename) {
+            console.log(`load from ${configPath}`);
+            return readConfig(configPath);
+        }
         throw `${chalk.red(`${configFile} not found`)}
     
     sample ${configFile} download
