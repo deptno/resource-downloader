@@ -1,7 +1,10 @@
 # web-resource-downlaoder
 
 ## install
-`npm -g i rd`
+```bash
+npm -g i resource-downloader
+rdcli #or resource-downloader
+```
 
 ## feature
 * command line interface
