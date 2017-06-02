@@ -1,6 +1,7 @@
 # web-resource-downlaoder
 
 ## install
+[![asciicast](https://asciinema.org/a/51pptvvyee0dv7qx7i3w85b0l.png)](https://asciinema.org/a/51pptvvyee0dv7qx7i3w85b0l)
 ```bash
 npm -g i resource-downloader
 rdcli #or resource-downloader
