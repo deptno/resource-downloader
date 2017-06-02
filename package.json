@@ -1,7 +1,7 @@
 {
   "name": "resource-downloader",
   "version": "0.2.0",
-  "description": "resource downloader",
+  "description": "resource downloader, scrap web site resources",
   "main": "src/index.js",
   "author": "deptno@gmail.com",
   "license": "Apache 2.0",

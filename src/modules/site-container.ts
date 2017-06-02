@@ -28,7 +28,7 @@ export default class SiteController {
         this.setStageParam(param);
 
         const {type, selector, attrs, operation, message, options}
-                       = this.getStageInfo();
+                       = <DownloadableStage>this.getStageInfo();
         const dom      = await this._fetcher.dom(param.url);
         const elements = Array.from(dom.querySelectorAll(selector));
         const choices  = elements.map<ChoiceOption>(
@@ -70,7 +70,7 @@ export default class SiteController {
         return this._params[this._stage];
     }
 
-    private getStageInfo(): Stage<Operation> {
+    private getStageInfo(): Stage {
         return this._site.stages[this._stage];
     }
 

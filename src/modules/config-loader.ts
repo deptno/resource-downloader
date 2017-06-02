@@ -36,7 +36,7 @@ export const readConfig = async (configFile = filename): Promise<Sites> => {
         return sites;
     } catch (ex) {
         if (configFile === filename) {
-            console.log(`local config file dosen't exist, loading from ${configPath}.`);
+            console.log(`local config file dosen't exist, try to load from ${configPath}`);
             return readConfig(configPath);
         }
         throw errorMessage;
