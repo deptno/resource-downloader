@@ -2,11 +2,11 @@ import * as fs from 'fs';
 import {FileWriter, ZipWriter, WriteEventCallback} from './writer';
 import * as sharp from 'sharp';
 import * as path from 'path';
-import {DownloadOptions} from '../../constants';
+import {SPLIT, SPLIT_RIGHT, ZIP} from '../../constants';
 
 export default (filename, streams, options: DownloadOptions) => {
-    const optZip   = options.find(option => option === DownloadOptions.ZIP);
-    const optSplit = options.find(option => option === DownloadOptions.SPLIT || option === DownloadOptions.SPLIT_RIGHT);
+    const optZip   = options.find(option => option === ZIP);
+    const optSplit = options.find(option => option === SPLIT || option === SPLIT_RIGHT);
     const writer   = optZip
         ? new ZipWriter(fs.createWriteStream(filename))
         : new FileWriter();
@@ -21,7 +21,7 @@ const doWrite = async (filename, streams, splitOption: DownloadOption, onWrite: 
     if (!splitOption) {
         return streams.map(response => onWrite(getName(response.config.url), response.data));
     }
-    const [l, r] = splitOption === DownloadOptions.SPLIT ? [0, 1] : [1, 0];
+    const [l, r] = splitOption === SPLIT ? [0, 1] : [1, 0];
     return Promise.all(streams.map(response => {
         const name     = getName(response.config.url);
         const stream   = response.data;

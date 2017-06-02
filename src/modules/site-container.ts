@@ -1,6 +1,6 @@
 import Questioner from './questioner';
 import {Fetcher} from './fetcher';
-import {Operations} from '../constants';
+import {JUST, NEXT, PREV} from '../constants';
 import write from './writer/index';
 
 export default class SiteController {
@@ -23,7 +23,7 @@ export default class SiteController {
             const value = element.getAttribute(attrs.value);
 
             return {
-                name,
+                name: `${name} [${value}]`,
                 value: JSON.stringify({name, value})
             };
         });
@@ -40,7 +40,7 @@ export default class SiteController {
         }[type];
         const result     = await handler();
 
-        if (operation.type === Operations.PREV) {
+        if (operation.type === PREV) {
             await this.prev();
         }
 
@@ -48,24 +48,24 @@ export default class SiteController {
     }
 
     private async select(type, message, choices, operation) {
-        const answer        = await Questioner.ask({
+        const answer        = await Questioner.askSelection({
             type, message, choices,
             name:      'name',
             paginated: true,
-            pageSize:  30
+            pageSize:  20
         });
         const {name, value} = answer;
 
         if (name === '..') {
             await this.prev();
-        } else if (operation.type === Operations.NEXT) {
+        } else if (operation.type === NEXT) {
             await this.next({url: value, answer});
         }
 
         return value;
     }
 
-    private setStageParam(param) {
+    private setStageParam(param: StageParam) {
         this._params[this._stage] = param;
     }
 
@@ -73,16 +73,16 @@ export default class SiteController {
         return this._params[this._stage];
     }
 
-    private getStageInfo() {
+    private getStageInfo(): Stage<Operation> {
         return this._site.stages[this._stage];
     }
 
-    private async download(filename, urls, options: DownloadOptions = ['just']) {
+    private async download(filename, urls, options: DownloadOptions = [JUST]) {
         const responses = await Fetcher.images(urls);
         write(filename, responses.filter(Boolean), options);
     }
 
-    private async next(stageParam) {
+    private async next(stageParam: StageParam) {
         this.setStep(this._stage + 1);
         return this.stage(stageParam);
     }
@@ -98,7 +98,7 @@ export default class SiteController {
         return this.stage(stageParam);
     }
 
-    private async loop(stageParam) {
+    private async loop(stageParam: StageParam) {
         return this.stage(stageParam);
     }
 

@@ -1,7 +1,7 @@
 import {ChoiceType, prompt, Question} from 'inquirer';
 
 export default class Questioner {
-    static async ask(question: Question, root = false) {
+    static async askSelection(question: Question, root = false) {
         if (!root) {
             const name = '..';
             const upper = {
@@ -12,5 +12,14 @@ export default class Questioner {
         }
         const answer = await prompt(question);
         return JSON.parse(answer.name);
+    }
+    static async askCheckBox(question: Question, root = false) {
+        if (!root) {
+            question.choices = <ChoiceType[]>question.choices;
+        }
+        const answer = await prompt(question);
+        console.log('answer', answer)
+        
+        return answer.name;
     }
 }

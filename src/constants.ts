@@ -1,19 +1,8 @@
-const NEXT = 'next';
-const PREV = 'prev';
+export const NEXT = 'next';
+export const PREV = 'prev';
 
-export const Operations = {
-    NEXT,
-    PREV
-};
+export const JUST                   = 'just';
+export const SPLIT                  = 'split';
+export const SPLIT_RIGHT            = 'splitRight';
+export const ZIP                    = 'zip';
 
-const JUST                   = 'just';
-const SPLIT                  = 'split';
-const SPLIT_RIGHT            = 'splitRight';
-const ZIP                    = 'zip';
-
-export const DownloadOptions = {
-    JUST,
-    SPLIT,
-    SPLIT_RIGHT,
-    ZIP
-};

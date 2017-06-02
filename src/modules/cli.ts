@@ -12,13 +12,13 @@ export default class CLI {
                 name: site.url
             })
         }));
-        const answer = await Questioner.ask({
+        const answer = await Questioner.askSelection({
             type:      'list',
             name:      'name',
-            message:   '사이트 선택',
+            message:   'select site',
             choices:   sites,
             paginated: true,
-            pageSize:  30
+            pageSize:  20
         }, true);
         return answer;
     }
