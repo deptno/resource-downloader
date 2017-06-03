@@ -3,6 +3,7 @@ import {FileWriter, ZipWriter, WriteEventCallback} from './writer';
 import * as sharp from 'sharp';
 import * as path from 'path';
 import {SPLIT, SPLIT_RIGHT, ZIP} from '../../constants';
+import {logger} from '../logger';
 
 export default (name, streams, options: DownloadOptions) => {
     const optZip   = options.find(option => option === ZIP);
@@ -13,7 +14,11 @@ export default (name, streams, options: DownloadOptions) => {
     const append = writer.append.bind(writer);
     const finalize = writer.finalize.bind(writer);
 
-    doWrite(streams, optSplit, append).then(finalize);
+    logger.write(`[DOWNLOAD] ${name}\n`);
+    doWrite(streams, optSplit, append)
+        .then(finalize)
+        .then(bytes => logger.write(`[OK] ${bytes} ${name}\n`))
+        .catch(bytes => logger.write(`[ERROR] ${bytes} ${name}\n`));
 };
 
 const zipName = name => `${name.replace(/\s/g, '_')}.zip`;

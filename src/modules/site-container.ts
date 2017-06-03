@@ -77,7 +77,7 @@ export default class SiteController {
                 if (!answer) {
                     return;
                 }
-                console.log(`[remains: ${answers.length}] ${answer.name} [${answers.url}]`);
+                console.log(`[remains: ${answers.length}] [queued] ${answer.name} [${answer.url}]`);
                 await this.next({
                     blockTypes: ['list'],
                     prevAfterStage: answers.length === 0,
