@@ -28,6 +28,6 @@
     "sharp": "^0.18.1"
   },
   "scripts": {
-    "prepublish": "tsc && echo \"#!/usr/bin/env node\nrequire('resource-downloader');\" > index.js"
+    "prepublish": "tsc && echo '#!/usr/bin/env node\nrequire(\"resource-downloader\");' > index.js"
   }
 }
