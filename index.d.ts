@@ -3,7 +3,7 @@ type Sites = Site[];
 type StepType = 'list' | 'download';
 type DownloadOption = 'just'|('split'|'splitRight')|'zip';
 type DownloadOptions = DownloadOption[];
-type Stage = BaseStage|SeletableStage|DownloadableStage;
+type Stage = BaseStage|SelectableStage|DownloadableStage;
 type Stages = Stage[];
 
 interface Config {
@@ -37,15 +37,17 @@ interface BaseStage {
     message: string;
     operation: Op;
 }
-interface SeletableStage extends BaseStage,Selectable {}
+interface SelectableStage extends BaseStage,Selectable {}
 interface DownloadableStage extends BaseStage,Selectable,DownLoadable {}
 interface ChoiceOptionValue {
-    url: string;
     name: string;
+    url: string;
 }
 interface StageParam {
-    url: string;
     name: string;
+    url: string;
+    blockTypes?: StepType[];
+    prevAfterStage?: boolean;
 }
 interface ChoiceOption {
     name: string;

@@ -15,13 +15,12 @@ export default class CLI {
         }));
         const result = await Questioner.askSelection({
             type:      'list',
-            name:      'answer',
             message:   'select site',
             choices:   sites,
             paginated: true,
             pageSize:  20
         }, true);
-        return result.answer;
+        return result;
     }
 
     getSite(site: ChoiceOptionValue) {

@@ -27,38 +27,73 @@ export default class SiteController {
     async stage(param = {} as StageParam) {
         this.setStageParam(param);
 
-        const {type, selector, attrs, operation, message, options}
-                       = <DownloadableStage>this.getStageInfo();
-        const dom      = await this._fetcher.dom(param.url);
-        const elements = Array.from(dom.querySelectorAll(selector));
-        const choices  = elements.map<ChoiceOption>(
-            SiteController.mapElementToChoice.bind(null, attrs)
-        );
-
-        if (type === 'list') {
-            await this.select(type, message, choices, operation);
-        } else if (type === 'download') {
-            this.download(choices.map(choice => choice.value.url), options)
-        }
+        await this.typeOperator();
+        
+        const {operation} = <DownloadableStage>this.getStageInfo();
 
         if (operation.type === PREV) {
-            await this.prev();
+            await this.prev(param.prevAfterStage);
         }
     }
 
+    private async getChoicesByUrl() {
+        const {url} = this.getStageParam();
+        const {selector, attrs} = <SelectableStage>this.getStageInfo();
+        const dom      = await this._fetcher.dom(url);
+        const elements = Array.from(dom.querySelectorAll(selector));
+
+        return elements.map<ChoiceOption>(
+            SiteController.mapElementToChoice.bind(null, attrs)
+        );
+    }
+
+    private async typeOperator() {
+        const {blockTypes = []} = this.getStageParam();
+        const {type, operation, message, options} = <DownloadableStage>this.getStageInfo();
+        const choices = await this.getChoicesByUrl();
+
+        if (!this.checkBlockType(blockTypes, type) && type === 'list') {
+            await this.select(type, message, choices, operation);
+        } else if (!this.checkBlockType(blockTypes, type) && type === 'download') {
+            this.download(choices.map(choice => choice.value.url), options)
+        }
+    }
+    
+    private checkBlockType(blockTypes, type): boolean {
+        return !!blockTypes.find(blockType => blockType === type);
+    }
+
     private async select(type, message, choices, operation) {
-        const {select}    = await Questioner.askSelection({
+        //fixme: this._stage === 1 -> need option: multi download
+        const answer    = await Questioner.askSelection({
             type, message, choices,
-            name:      'select',
             paginated: true,
             pageSize:  20
-        });
-        const {name, url} = select;
+        }, false, this._stage === 1);
 
-        if (name === PARENT_DIRECTORY) {
-            await this.prev();
-        } else if (operation.type === NEXT) {
-            await this.next({url, name});
+        if (Array.isArray(answer)) {
+            const asyncLoop = async answers => {
+                const answer = answers.shift();
+                if (!answer) {
+                    return;
+                }
+                console.log(`[remains: ${answers.length}] ${answer.name} [${answers.url}]`);
+                await this.next({
+                    blockTypes: ['list'],
+                    prevAfterStage: answers.length === 0,
+                    ...answer
+                });
+                await asyncLoop(answers);
+            };
+            await asyncLoop(answer);
+        } else {
+            const {name, url} = answer;
+
+            if (name === PARENT_DIRECTORY) {
+                await this.prev();
+            } else if (operation.type === NEXT) {
+                await this.next({url, name});
+            }
         }
     }
 
@@ -87,15 +122,16 @@ export default class SiteController {
         return this.stage(stageParam);
     }
 
-    private async prev(stageParam?) {
+    private async prev(prevAfterStage = true) {
         if (this._stage === 0) {
             return;
         }
         this.setStep(this._stage - 1);
-        if (!stageParam) {
-            stageParam = this.getStageParam();
+
+        if (prevAfterStage) {
+            const stageParam = this.getStageParam();
+            return this.stage(stageParam);
         }
-        return this.stage(stageParam);
     }
 
     private async loop(stageParam: StageParam) {
