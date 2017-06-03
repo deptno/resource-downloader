@@ -1,27 +1,27 @@
 import * as chalk from 'chalk';
-import * as figlet from 'figlet';
-import * as clear from 'clear';
 import {name, version} from '../package.json';
-import CLI from './modules/interface';
+import Cli from './modules/cli';
 import {readConfig} from './modules/config-loader';
+import {logger} from './modules/logger';
 
-clear();
-console.log(
-    chalk.yellow(figlet.textSync(name, {horizontalLayout: 'default', verticalLayout: 'default'})),
-    `\n${chalk.red(version)}`
-);
+console.log(`${chalk.yellow(name)} v${version}`);
+
+process.on('beforeExit', signal => {
+    console.log('exit signal: ', signal);
+    logger.end();
+    logger.pipe(process.stdout);
+});
 
 !async function() {
     try {
-        const cli = new CLI(await readConfig());
+        const cli = new Cli(await readConfig());
         while (true) {
-            const siteName = await cli.select();
-            const site = cli.getSite(siteName);
+            const answer = <ChoiceOptionValue>await cli.select();
+            const site = cli.getSite(answer);
             await site.stage();
         }
     } catch(ex) {
         console.error(ex);
-        process.exit(1);
     }
 }();
 

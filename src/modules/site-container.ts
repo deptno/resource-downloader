@@ -1,14 +1,23 @@
-import * as path from 'path';
-import * as fs from 'fs';
-import * as bytes from 'bytes';
 import Questioner from './questioner';
-import {Zip} from './downloader/zip-images';
 import {Fetcher} from './fetcher';
-import {Operations} from '../constants';
+import {NEXT, PARENT_DIRECTORY, PREV, SPLIT, ZIP} from '../constants';
+import write from './writer/index';
 
 export default class SiteController {
-    private _stage  = 0;
-    private _params = [];
+    static mapElementToChoice(attrs: MapString, element: Element): ChoiceOption {
+        const name = attrs.name
+            ? element.getAttribute(attrs.name)
+            : element.textContent;
+        const url  = element.getAttribute(attrs.value);
+
+        return {
+            name:  `${name} [${url}]`,
+            value: {name, url}
+        };
+    }
+
+    private _stage                = 0;
+    private _params: StageParam[] = [];
     private _fetcher: Fetcher;
 
     constructor(private _site: Site) {
@@ -17,58 +26,78 @@ export default class SiteController {
 
     async stage(param = {} as StageParam) {
         this.setStageParam(param);
-        const {url = ''}                                  = param;
-        const stageInfo                                   = this.getStageInfo();
-        const {type, selector, attrs, operation, message} = stageInfo;
-        const dom                                         = await this._fetcher.dom(url);
-        const elements                                    = Array.from(dom.querySelectorAll(selector));
-        const choices                                     = elements.map(element => {
-            const name  = attrs.name ? element.getAttribute(attrs.name) : element.textContent;
-            const value = element.getAttribute(attrs.value);
 
-            return {
-                name,
-                value: JSON.stringify({name, value})
-            };
-        });
-        const handler                                     = {
-            list:     async () => await this.select(type, message, choices, operation),
-            download: () => {
-                const {answer: {name}} = this.getStageParam();
-                this.download(
-                    `${name.replace(/\s/g, '_')}.zip`,
-                    choices.map(choice => JSON.parse(choice.value).value)
-                );
-            }
-        }[type];
-        const result = await handler();
+        await this.typeOperator();
+        
+        const {operation} = <DownloadableStage>this.getStageInfo();
 
-        if (operation.type === Operations.PREV) {
-            await this.prev();
+        if (operation.type === PREV) {
+            await this.prev(param.prevAfterStage);
         }
+    }
 
-        return result;
+    private async getChoicesByUrl() {
+        const {url} = this.getStageParam();
+        const {selector, attrs} = <SelectableStage>this.getStageInfo();
+        const dom      = await this._fetcher.dom(url);
+        const elements = Array.from(dom.querySelectorAll(selector));
+
+        return elements.map<ChoiceOption>(
+            SiteController.mapElementToChoice.bind(null, attrs)
+        );
+    }
+
+    private async typeOperator() {
+        const {blockTypes = []} = this.getStageParam();
+        const {type, operation, message, options} = <DownloadableStage>this.getStageInfo();
+        const choices = await this.getChoicesByUrl();
+
+        if (!this.checkBlockType(blockTypes, type) && type === 'list') {
+            await this.select(type, message, choices, operation);
+        } else if (!this.checkBlockType(blockTypes, type) && type === 'download') {
+            this.download(choices.map(choice => choice.value.url), options)
+        }
+    }
+    
+    private checkBlockType(blockTypes, type): boolean {
+        return !!blockTypes.find(blockType => blockType === type);
     }
 
     private async select(type, message, choices, operation) {
-        const answer        = await Questioner.ask({
+        //fixme: this._stage === 1 -> need option: multi download
+        const answer    = await Questioner.askSelection({
             type, message, choices,
-            name:      'name',
             paginated: true,
-            pageSize:  30
-        });
-        const {name, value} = answer;
+            pageSize:  20
+        }, false, this._stage === 1);
 
-        if (name === '..') {
-            await this.prev();
-        } else if (operation.type === Operations.NEXT) {
-            await this.next({url: value, answer});
+        if (Array.isArray(answer)) {
+            const asyncLoop = async answers => {
+                const answer = answers.shift();
+                if (!answer) {
+                    return;
+                }
+                console.log(`[remains: ${answers.length}] [queued] ${answer.name} [${answer.url}]`);
+                await this.next({
+                    blockTypes: ['list'],
+                    prevAfterStage: answers.length === 0,
+                    ...answer
+                });
+                await asyncLoop(answers);
+            };
+            await asyncLoop(answer);
+        } else {
+            const {name, url} = answer;
+
+            if (name === PARENT_DIRECTORY) {
+                await this.prev();
+            } else if (operation.type === NEXT) {
+                await this.next({url, name});
+            }
         }
-        
-        return value;
     }
 
-    private setStageParam(param) {
+    private setStageParam(param: StageParam) {
         this._params[this._stage] = param;
     }
 
@@ -76,46 +105,36 @@ export default class SiteController {
         return this._params[this._stage];
     }
 
-    private getStageInfo() {
+    private getStageInfo(): Stage {
         return this._site.stages[this._stage];
     }
 
-    private download(filename, urls) {
-        process.nextTick((async (filename, urls) => {
-            const responses = await Fetcher.images(urls);
-            const output    = fs.createWriteStream(filename);
-            const zip       = new Zip(output);
-
-            console.log(`[DN] ${filename} ${urls.length} files`);
-            output.on('close', () => console.log(`[DONE] ${bytes.format(zip.pointer(), {decimalPlaces: 0})} ${filename}`));
-            responses
-                .filter(Boolean)
-                .map(response => {
-                    const name   = path.basename(decodeURI(response.config.url));
-                    const stream = response.data;
-                    zip.append(name, stream);
-                });
-            zip.finalize();
-        }).bind(this, filename, urls))
+    private download(urls, options: DownloadOptions = [ZIP, SPLIT]): void {
+        const {name} = this.getStageParam();
+        Fetcher
+            .images(urls)
+            .then(responses => responses.filter(Boolean))
+            .then(responses => write(name, responses, options));
     }
 
-    private async next(stageParam) {
+    private async next(stageParam: StageParam) {
         this.setStep(this._stage + 1);
         return this.stage(stageParam);
     }
 
-    async prev(stageParam?) {
+    private async prev(prevAfterStage = true) {
         if (this._stage === 0) {
             return;
         }
         this.setStep(this._stage - 1);
-        if (!stageParam) {
-            stageParam = this.getStageParam();
+
+        if (prevAfterStage) {
+            const stageParam = this.getStageParam();
+            return this.stage(stageParam);
         }
-        return this.stage(stageParam);
     }
 
-    private async loop(stageParam) {
+    private async loop(stageParam: StageParam) {
         return this.stage(stageParam);
     }
 

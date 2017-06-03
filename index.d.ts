@@ -1,10 +1,10 @@
-type OperationType = 'next'|'prev';
+type OperationType = 'next' | 'prev';
 type Sites = Site[];
-type OpNext = Op<null>;
-type OpDownload = Op<DownloadInfo>
-type Operation = OpNext|OpDownload;
-type StepType = 'list'|'download';
-type Stages = Stage<Operation>[];
+type StepType = 'list' | 'download';
+type DownloadOption = 'just'|('split'|'splitRight')|'zip';
+type DownloadOptions = DownloadOption[];
+type Stage = BaseStage|SelectableStage|DownloadableStage;
+type Stages = Stage[];
 
 interface Config {
     sites: Sites;
@@ -15,34 +15,44 @@ interface Site {
     url: string;
     stages: Stages;
 }
-interface Selectable {
-    selector: string;
-    attrs: {
-        name: string;
-        value: string;
-    };
-}
-interface Stage<Operation> extends Selectable {
-    type: StepType;
-    message: string;
-    operation: Operation;
-}
-
-interface Op<T> {
+interface Op {
     type: OperationType;
-    data: T;
 }
-interface DownloadInfo extends Selectable  {
-    prefixes: {
+interface DownLoadable {
+    options?: DownloadOptions;
+    prefixes?: {
         doing: string;
         done: string;
     }
 }
-
-interface StageParam {
-    url: string;
-    answer: {
-        name: string;
+interface Selectable {
+    selector: string;
+    attrs: {
+        name?: string;
         value: string;
-    }
+    };
+}
+interface BaseStage {
+    type: StepType;
+    message: string;
+    operation: Op;
+}
+interface SelectableStage extends BaseStage,Selectable {}
+interface DownloadableStage extends BaseStage,Selectable,DownLoadable {}
+interface ChoiceOptionValue {
+    name: string;
+    url: string;
+}
+interface StageParam {
+    name: string;
+    url: string;
+    blockTypes?: StepType[];
+    prevAfterStage?: boolean;
+}
+interface ChoiceOption {
+    name: string;
+    value: ChoiceOptionValue;
+}
+interface MapString {
+    [key: string]: string;
 }

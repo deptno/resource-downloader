@@ -8,23 +8,23 @@ export default class CLI {
     async select() {
         const sites  = this._sites.map(site => ({
             name:  site.name,
-            value: JSON.stringify({
-                name: site.url
-            })
+            value: {
+                name: site.name,
+                url: site.url
+            } as any
         }));
-        const answer = await Questioner.ask({
+        const result = await Questioner.askSelection({
             type:      'list',
-            name:      'name',
-            message:   '사이트 선택',
+            message:   'select site',
             choices:   sites,
             paginated: true,
-            pageSize:  30
+            pageSize:  20
         }, true);
-        return answer;
+        return result;
     }
 
-    getSite(site) {
-        const found = this._sites.find(siteInfo => siteInfo.url === site.name);
+    getSite(site: ChoiceOptionValue) {
+        const found = this._sites.find(siteInfo => siteInfo.url === site.url);
         if (!found) {
             throw 'check site name';
         }
