@@ -36,6 +36,10 @@ const doWrite = async (streams, splitOption: DownloadOption, onWrite: WriteEvent
         stream.pipe(pipeline);
         return pipeline
             .metadata()
+            .catch(ex => {
+                logger.write(`[ISSUE] ${ex}, ${response.config.url}\n`);
+                throw ex;
+            })
             .then((name => ({width, height}) => {
                 if (width > height) {
                     const half      = Math.floor(width / 2);

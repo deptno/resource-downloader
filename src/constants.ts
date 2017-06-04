@@ -1,3 +1,9 @@
+import {name, version, repository} from '../package.json';
+
+export const NAME = name;
+export const VERSION = version;
+export const REPOSITORY = repository;
+
 export const NEXT = 'next';
 export const PREV = 'prev';
 
