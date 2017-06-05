@@ -2,6 +2,7 @@ import Questioner from './questioner';
 import {Fetcher} from './fetcher';
 import {NEXT, PARENT_DIRECTORY, PREV, SPLIT, ZIP} from '../constants';
 import write from './writer/index';
+import {logger} from './logger';
 
 export default class SiteController {
     static mapElementToChoice(attrs: MapString, element: Element): ChoiceOption {
@@ -9,10 +10,13 @@ export default class SiteController {
             ? element.getAttribute(attrs.name)
             : element.textContent;
         const url  = element.getAttribute(attrs.value);
+        const log = logger.logs().find(log => log.name === name);
+        const status = log ? `${logger.status(log)}` : '';
 
         return {
             name:  `${name} [${url}]`,
-            value: {name, url}
+            value: {name, url},
+            disabled: status
         };
     }
 
@@ -53,6 +57,9 @@ export default class SiteController {
         const {name} = this.getStageParam();
 
         if (!this.checkBlockType(blockTypes, type) && type === 'download') {
+            //fixme: await ? slow but show user status : fast;
+            //when we make status bar(like ncurse), remove await
+            // await
             this.getChoicesByUrl().then(choices =>
                 this.download(name, choices.map(choice => choice.value.url), options)
             );
@@ -80,7 +87,7 @@ export default class SiteController {
                 if (!answer) {
                     return;
                 }
-                console.log(`[remains: ${answers.length}] [queued] ${answer.name} [${answer.url}]`);
+                console.log(`[queued] ${answer.name} [${answer.url}]`);
                 await this.next({
                     blockTypes: ['list'],
                     prevAfterStage: answers.length === 0,
@@ -112,11 +119,11 @@ export default class SiteController {
         return this._site.stages[this._stage];
     }
 
-    private download(name, urls, options: DownloadOptions = [ZIP, SPLIT]): void {
-        Fetcher
+    private async download(name, urls, options: DownloadOptions = [ZIP, SPLIT]) {
+        return Fetcher
             .images(urls)
             .then(responses => responses.filter(Boolean))
-            .then(responses => write(name, responses, options));
+            .then(responses => logger.add(name, write(name, responses, options)))
     }
 
     private async next(stageParam: StageParam) {

@@ -2,10 +2,9 @@ import * as fs from 'fs';
 import {FileWriter, ZipWriter, WriteEventCallback} from './writer';
 import * as path from 'path';
 import {SPLIT, SPLIT_RIGHT, ZIP} from '../../constants';
-import {logger} from '../logger';
 import {splitIfWidthBiggerThenHeight} from '../image-processor/index';
 
-export default async (name, streams, options: DownloadOptions) => {
+export default async (name, streams, options: DownloadOptions): Promise<any> => {
     const optZip   = options.find(option => option === ZIP);
     const optSplit = options.find(option => option === SPLIT || option === SPLIT_RIGHT);
     const writer   = optZip
@@ -14,10 +13,7 @@ export default async (name, streams, options: DownloadOptions) => {
     const append = writer.append.bind(writer);
     const finalize = writer.finalize.bind(writer);
 
-    logger.add(
-        name,
-        doWrite(streams, optSplit, append).then(finalize)
-    );
+    return doWrite(streams, optSplit, append).then(finalize)
 };
 
 const zipName: (url: string) => string = name => `${name.replace(/\s/g, '_')}.zip`;

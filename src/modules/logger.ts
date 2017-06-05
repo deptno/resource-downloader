@@ -2,7 +2,7 @@ import * as chalk from 'chalk';
 import {PassThrough} from 'stream';
 import {NAME, VERSION} from '../constants';
 
-enum Status {
+export enum Status {
     PENDING,
     OK,
     ERROR,
@@ -12,6 +12,7 @@ interface Log {
     promise: Promise<Log|any>;
     status: Status;
     timestamp: Date;
+    bytes?: number;
 }
 
 class Logger {
@@ -27,8 +28,9 @@ class Logger {
         const log: Log = {
             name,
             promise: promise
-                .then(_ => {
+                .then(bytes => {
                     log.status = Status.OK;
+                    log.bytes = bytes;
                     return log;
                 })
                 .catch(_ => {
@@ -44,25 +46,37 @@ class Logger {
     }
 
     flush(): PassThrough {
+        this.flush = function dummyPipe() {
+            this.pipe = () => {};
+            return this;
+        };
         console.log(chalk.yellow(`\nprepare to exit, remains works log will print.\n`));
 
         this._logs
             .filter(log => log.status === Status.PENDING)
-            .map(this.template)
-            .forEach(log => this._logger.write(log));
+            .forEach(log => this._logger.write(this.template(log)));
 
         this._lazyLogger.pipe(this._logger);
         return this._logger;
     }
 
-    private template({status, name}): string {
+    logs() {
+        return this._logs;
+    }
+
+    status(log): string {
+        const {status, bytes} = log;
+        return `[${Status[status]}] ${bytes ? `[${bytes}]` : ''} `;
+    }
+
+    private template(log): string {
+        const {status, name, bytes} = log;
         const remains = this._logs.filter(({status}) => status === Status.PENDING).length;
+        const remainText = remains > 0
+                ? `remains: ${remains}`
+                : 'no remains';
 
-        if (remains === 0) {
-            setTimeout(() => console.log(`you can exit now.`), 1);
-        }
-
-        return `[remains: ${remains}][${Status[status]}] ${name}\n`;
+        return `[${remainText}][${Status[status]}] ${bytes ? `[${bytes}]` : ''}${name}\n`;
     }
 }
 

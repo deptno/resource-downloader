@@ -52,6 +52,7 @@ interface StageParam {
 interface ChoiceOption {
     name: string;
     value: ChoiceOptionValue;
+    disabled?: boolean|string;
 }
 interface MapString {
     [key: string]: string;
