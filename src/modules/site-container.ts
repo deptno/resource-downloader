@@ -28,7 +28,7 @@ export default class SiteController {
         this.setStageParam(param);
 
         await this.typeOperator();
-        
+
         const {operation} = <DownloadableStage>this.getStageInfo();
 
         if (operation.type === PREV) {
@@ -50,15 +50,18 @@ export default class SiteController {
     private async typeOperator() {
         const {blockTypes = []} = this.getStageParam();
         const {type, operation, message, options} = <DownloadableStage>this.getStageInfo();
-        const choices = await this.getChoicesByUrl();
+        const {name} = this.getStageParam();
 
-        if (!this.checkBlockType(blockTypes, type) && type === 'list') {
+        if (!this.checkBlockType(blockTypes, type) && type === 'download') {
+            this.getChoicesByUrl().then(choices =>
+                this.download(name, choices.map(choice => choice.value.url), options)
+            );
+        } else if (!this.checkBlockType(blockTypes, type) && type === 'list') {
+            const choices = await this.getChoicesByUrl();
             await this.select(type, message, choices, operation);
-        } else if (!this.checkBlockType(blockTypes, type) && type === 'download') {
-            this.download(choices.map(choice => choice.value.url), options)
         }
     }
-    
+
     private checkBlockType(blockTypes, type): boolean {
         return !!blockTypes.find(blockType => blockType === type);
     }
@@ -109,8 +112,7 @@ export default class SiteController {
         return this._site.stages[this._stage];
     }
 
-    private download(urls, options: DownloadOptions = [ZIP, SPLIT]): void {
-        const {name} = this.getStageParam();
+    private download(name, urls, options: DownloadOptions = [ZIP, SPLIT]): void {
         Fetcher
             .images(urls)
             .then(responses => responses.filter(Boolean))

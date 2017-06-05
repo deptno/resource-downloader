@@ -20,7 +20,7 @@ export class Fetcher {
         if (this._domCache[url]) {
             return this._domCache[url];
         }
-        const {status, data} = await queue.push(() => this._fetch.get(url));
+        const {status, data} = await this._fetch.get(url);
         if (status >= 400) {
             console.error(`[error] status ${status}`);
             throw [];
