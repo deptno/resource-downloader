@@ -1,9 +1,8 @@
 import * as archiver from 'archiver';
 import * as fs from 'fs';
-import {ReadStream} from 'fs';
 import * as bytes from 'bytes';
 
-export type WriteEventCallback = (name: string, stream: ReadStream) => void;
+export type WriteEventCallback = (name: string, stream: NodeJS.ReadableStream) => void;
 
 export interface Writer {
     append: WriteEventCallback;
@@ -11,7 +10,7 @@ export interface Writer {
 }
 
 abstract class AbsWriter implements Writer {
-    abstract append(name: string, stream: ReadStream);
+    abstract append(name: string, stream: NodeJS.ReadableStream);
 
     abstract finalize(): Promise<string>;
 }
@@ -45,7 +44,7 @@ export class ZipWriter extends AbsWriter {
 }
 
 export class FileWriter extends AbsWriter {
-    append(name: string, stream: ReadStream) {
+    append(name: string, stream: NodeJS.ReadableStream) {
         stream.pipe(fs.createWriteStream(name));
     }
 

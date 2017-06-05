@@ -56,3 +56,7 @@ interface ChoiceOption {
 interface MapString {
     [key: string]: string;
 }
+interface NameStream {
+    name: string;
+    data: NodeJS.ReadableStream;
+}

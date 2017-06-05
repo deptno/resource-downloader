@@ -2,11 +2,7 @@ import * as sharp from 'sharp';
 import * as path from 'path';
 import * as bmp from 'bmp-js';
 
-interface NameStream {
-    name: string;
-    data: NodeJS.ReadableStream;
-}
-const splitIfWidthBiggerThenHeight =
+export const splitIfWidthBiggerThenHeight =
     async (name: string, stream: NodeJS.ReadableStream, rightFirst?: boolean): Promise<NameStream[]> => {
         const pipeline = sharp();
         const [l, r] = !rightFirst ? [0, 1] : [1, 0];

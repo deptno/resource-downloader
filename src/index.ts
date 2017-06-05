@@ -1,16 +1,8 @@
-import * as chalk from 'chalk';
 import Cli from './modules/cli';
 import {readConfig} from './modules/config-loader';
 import {logger} from './modules/logger';
-import {NAME, REPOSITORY, VERSION} from './constants';
 
-console.log(`${chalk.yellow(NAME)} v${VERSION}`);
-
-process.on('beforeExit', _ => {
-    logger.write(chalk.yellow(`if you have any [ISSUE], feel free to let us know. [${REPOSITORY}/issue/new]`));
-    logger.end();
-    logger.pipe(process.stdout);
-});
+process.on('SIGINT', _ => logger.flush().pipe(process.stdout));
 
 !async function() {
     try {
@@ -24,4 +16,3 @@ process.on('beforeExit', _ => {
         console.error(ex);
     }
 }();
-
