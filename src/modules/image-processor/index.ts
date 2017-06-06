@@ -38,7 +38,7 @@ export const splitIfWidthBiggerThenHeight =
             }
             return ret;
         } catch (message) {
-            throw new Error(JSON.stringify({filename, message}))
+            throw new Error(JSON.stringify({name: filename, message}))
         }
     };
 
