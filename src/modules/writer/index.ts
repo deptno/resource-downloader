@@ -20,7 +20,7 @@ const zipName: (url: string) => string = name => `${name.replace(/\s/g, '_')}.zi
 const getName: (url: string) => string = url => path.basename(decodeURI(url));
 const doWrite = async (streams, splitOption: DownloadOption, onWrite: WriteEventCallback): Promise<NameStream[]> => {
     const repeater: (name, stream) => Promise<NameStream[]> = splitOption
-        ? splitIfWidthBiggerThenHeight
+        ? (name, stream) => splitIfWidthBiggerThenHeight(name, stream, splitOption === SPLIT_RIGHT)
         : async (name, data) => [{name, data}];
 
     return Promise.all<NameStream>(
