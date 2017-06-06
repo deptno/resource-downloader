@@ -3,15 +3,15 @@ import * as path from 'path';
 import * as bmp from 'bmp-js';
 
 export const splitIfWidthBiggerThenHeight =
-    async (name: string, stream: NodeJS.ReadableStream, rightFirst?: boolean): Promise<NameStream[]> => {
+    async (filename: string, stream: NodeJS.ReadableStream, rightFirst?: boolean): Promise<NameStream[]> => {
         const pipeline = sharp();
         const [l, r] = !rightFirst ? [0, 1] : [1, 0];
 
         stream.pipe(pipeline);
 
         try {
-            const basename = path.basename(name);
-            const ext = path.extname(name).slice(1);
+            const name = path.basename(filename);
+            const ext = path.extname(filename).slice(1);
             const ret = [];
             try {
                 const {width, height} = await metadata(ext, pipeline);
@@ -21,10 +21,10 @@ export const splitIfWidthBiggerThenHeight =
                     const leftPage = pipeline.clone().extract({left: 0, top: 0, width: half, height});
                     const rightPage = pipeline.clone().extract({left: half, top: 0, width: half, height});
 
-                    ret.push({name: `${basename}_${l}.${ext}`, data: leftPage});
-                    ret.push({name: `${basename}_${r}.${ext}`, data: rightPage});
+                    ret.push({name: `${name}_${l}.${ext}`, data: leftPage});
+                    ret.push({name: `${name}_${r}.${ext}`, data: rightPage});
                 } else {
-                    ret.push({name, data: pipeline.clone()});
+                    ret.push({filename, data: pipeline.clone()});
                 }
             } catch(ex) {
                 const type = supportTypes.find(type => type.format === ext);
@@ -33,11 +33,11 @@ export const splitIfWidthBiggerThenHeight =
                     throw `unsupported type ${ext}`;
                 }
 
-                return splitIfWidthBiggerThenHeight(name, type.handler(pipeline.toBuffer()));
+                return splitIfWidthBiggerThenHeight(filename, type.handler(pipeline.toBuffer()));
             }
             return ret;
         } catch (message) {
-            throw new Error(JSON.stringify({name, message}))
+            throw new Error(JSON.stringify({filename, message}))
         }
     };
 
