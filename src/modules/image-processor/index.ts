@@ -10,8 +10,9 @@ export const splitIfWidthBiggerThenHeight =
         stream.pipe(pipeline);
 
         try {
-            const name = path.basename(filename);
-            const ext = path.extname(filename).slice(1);
+            const parsed = path.parse(filename);
+            const name = parsed.name;
+            const ext = parsed.ext.slice(1);
             const ret = [];
             try {
                 const {width, height} = await metadata(ext, pipeline);
@@ -24,7 +25,7 @@ export const splitIfWidthBiggerThenHeight =
                     ret.push({name: `${name}_${l}.${ext}`, data: leftPage});
                     ret.push({name: `${name}_${r}.${ext}`, data: rightPage});
                 } else {
-                    ret.push({filename, data: pipeline.clone()});
+                    ret.push({name: filename, data: pipeline.clone()});
                 }
             } catch(ex) {
                 const type = supportTypes.find(type => type.format === ext);
