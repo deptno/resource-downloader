@@ -24,7 +24,7 @@ export default class CLI {
     }
 
     getSite(site: ChoiceOptionValue) {
-        const found = this._sites.find(siteInfo => siteInfo.url === site.url);
+        const found = this._sites.find(siteInfo => siteInfo.name === site.name);
         if (!found) {
             throw 'check site name';
         }
