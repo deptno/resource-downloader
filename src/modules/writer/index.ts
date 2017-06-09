@@ -17,19 +17,23 @@ export default async (name, streams, options: DownloadOptions): Promise<any> => 
 };
 
 const zipName = (name: string) => `${name.replace(/\s/g, '_')}.zip`;
-const doWrite = async (streams, splitOption: DownloadOption, onWrite: WriteEventCallback): Promise<NameStream[]> => {
+const doWrite = async (streams, splitOption: DownloadOption, onWrite: WriteEventCallback): Promise<void[]> => {
     const repeater: (ext, stream) => Promise<NodeJS.ReadableStream[]> = splitOption
         ? (ext, stream) => splitIfWidthBiggerThenHeight(ext, stream, splitOption === SPLIT_RIGHT)
         : async (ext, data) => [data];
 
-    return Promise.all<NameStream>(
+    return Promise.all<void>(
         streams.map(async (response, name) => {
             const ext = path.extname(response.config.url);
             const data = response.data;
 
+            if (ext === '.bmp') {
+                onWrite(`${name}0${ext}`, data);
+                return;
+            }
+
             const result = await repeater(ext, data);
             result.forEach((data, postfix) => onWrite(`${name}${postfix}${ext}`, data));
-            return result;
         })
     );
 };
