@@ -1,6 +1,6 @@
 {
   "name": "resource-downloader",
-  "version": "0.5.2-1",
+  "version": "0.5.3-0",
   "description": "resource downloader, scrap web site resources",
   "main": "src/index.js",
   "bin": {
