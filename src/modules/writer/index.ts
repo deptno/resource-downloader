@@ -16,20 +16,19 @@ export default async (name, streams, options: DownloadOptions): Promise<any> => 
     return doWrite(streams, optSplit, append).then(finalize)
 };
 
-const zipName: (url: string) => string = name => `${name.replace(/\s/g, '_')}.zip`;
-const getName: (url: string) => string = url => path.basename(decodeURI(url));
+const zipName = (name: string) => `${name.replace(/\s/g, '_')}.zip`;
 const doWrite = async (streams, splitOption: DownloadOption, onWrite: WriteEventCallback): Promise<NameStream[]> => {
-    const repeater: (name, stream) => Promise<NameStream[]> = splitOption
-        ? (name, stream) => splitIfWidthBiggerThenHeight(name, stream, splitOption === SPLIT_RIGHT)
-        : async (name, data) => [{name, data}];
+    const repeater: (ext, stream) => Promise<NodeJS.ReadableStream[]> = splitOption
+        ? (ext, stream) => splitIfWidthBiggerThenHeight(ext, stream, splitOption === SPLIT_RIGHT)
+        : async (ext, data) => [data];
 
     return Promise.all<NameStream>(
-        streams.map(async response => {
-            const name = getName(response.config.url);
+        streams.map(async (response, name) => {
+            const ext = path.extname(response.config.url);
             const data = response.data;
 
-            const result = await repeater(name, data);
-            result.forEach(({name, data}) => onWrite(name, data));
+            const result = await repeater(ext, data);
+            result.forEach((data, postfix) => onWrite(`${name}${postfix}${ext}`, data));
             return result;
         })
     );
