@@ -1,4 +1,6 @@
-# web-resource-downlaoder
+# resource-downlaoder
+[![npm](https://img.shields.io/npm/dt/resource-downloader.svg?style=for-the-badge)](https://www.npmjs.com/package/resource-downloader)
+> 💔 THIS PROJECT IS NO LONGER MAINTAINED
 
 ## install
 [![asciicast](https://asciinema.org/a/51pptvvyee0dv7qx7i3w85b0l.png)](https://asciinema.org/a/51pptvvyee0dv7qx7i3w85b0l)
